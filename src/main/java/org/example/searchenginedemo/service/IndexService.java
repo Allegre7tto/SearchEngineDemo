@@ -29,7 +29,7 @@ public class IndexService {
     private static final long BATCH_TIMEOUT_MS = 5000;
 
     // 存储接收到的消息的队列
-    private final BlockingQueue<Map<String, Object>> messageQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<Map<String, String>> messageQueue = new LinkedBlockingQueue<>();
     // 调度执行器，用于定时批量处理
     private final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
 
@@ -46,10 +46,6 @@ public class IndexService {
         logger.info("Kafka消费者服务已启动，等待消息...");
     }
 
-    /**
-     * 监听Kafka主题，接收分词结果消息
-     * @param message 消息内容，格式为 "词|页面ID|位置"
-     */
     @KafkaListener(topics = "word-segments", groupId = "search-engine-group")
     public void listen(String message) {
         try {
@@ -60,7 +56,7 @@ public class IndexService {
                 String position = parts[1] + ":" + parts[2];
 
                 // 创建参数映射并加入队列
-                Map<String, Object> params = new HashMap<>();
+                Map<String, String> params = new HashMap<>();
                 params.put("word", word);
                 params.put("position", position);
                 messageQueue.add(params);
@@ -75,12 +71,9 @@ public class IndexService {
         }
     }
 
-    /**
-     * 批量处理队列中的消息
-     */
     @Transactional
     public void processBatch() {
-        List<Map<String, Object>> batch = new ArrayList<>();
+        List<Map<String, String>> batch = new ArrayList<>();
 
         // 从队列中取出消息，最多取BATCH_SIZE条
         messageQueue.drainTo(batch, BATCH_SIZE);
@@ -98,9 +91,6 @@ public class IndexService {
         }
     }
 
-    /**
-     * 应用关闭时清理资源
-     */
     public void shutdown() {
         // 处理剩余的消息
         processBatch();

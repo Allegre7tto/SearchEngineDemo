@@ -23,9 +23,6 @@ public class BM25Service {
         this.b = 0.75;
     }
 
-    /**
-     * 计算文档对特定词的BM25评分
-     */
     public double score(String term, int docId, int termFrequency, int documentFrequency) {
         if (termFrequency == 0 || documentFrequency == 0) {
             return 0.0;
@@ -48,9 +45,6 @@ public class BM25Service {
         return idf * ((k1 + 1.0) * termFrequency) / (k1 * normalizationFactor + termFrequency);
     }
 
-    /**
-     * 获取文档总数(带缓存)
-     */
     public int getTotalDocuments() {
         if (totalDocuments == null) {
             totalDocuments = searchMapper.getTotalPageCount();
@@ -58,9 +52,6 @@ public class BM25Service {
         return totalDocuments;
     }
 
-    /**
-     * 获取平均文档长度(带缓存)
-     */
     public double getAverageDocumentLength() {
         if (averageDocumentLength == null) {
             averageDocumentLength = searchMapper.getAveragePageLength();
@@ -68,9 +59,6 @@ public class BM25Service {
         return averageDocumentLength;
     }
 
-    /**
-     * 清除缓存
-     */
     public void clearCache() {
         averageDocumentLength = null;
         totalDocuments = null;

@@ -2,42 +2,14 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.SearchEngine.mapper.DictMapper">
+<mapper namespace="com.example.SearchEngineDemo.mapper.DictMapper">
 
-    <update id="batchUpdateDict" parameterType="java.util.List">
-        <foreach collection="list" item="item" separator=";">
+    <update id="batchUpdateDict" parameterType="list">
+        <foreach collection="string" item="item" separator=";">
             UPDATE word_dict
             SET positions = concat(ifnull(positions, ''), ',', #{item.position})
             WHERE name = #{item.word}
         </foreach>
     </update>
-
-    <!-- 获取包含指定词的文档数量(文档频率) -->
-    <select id="getDocumentFrequency" resultType="int">
-        SELECT
-            CASE
-                WHEN positions IS NULL THEN 0
-                ELSE (LENGTH(positions) - LENGTH(REPLACE(positions, ',', '')) + 1)
-                END as doc_frequency
-        FROM word_dict
-        WHERE name = #{term}
-    </select>
-
-    <!-- 获取词在各文档中的位置信息 -->
-    <select id="getTermPositions" resultType="map">
-        SELECT name, positions
-        FROM word_dict
-        WHERE name = #{term}
-    </select>
-
-    <!-- 搜索包含指定词的文档及其位置信息 -->
-    <select id="searchTerms" resultType="map">
-        SELECT name, positions
-        FROM word_dict
-        WHERE name IN
-        <foreach item="term" collection="terms" open="(" separator="," close=")">
-            #{term}
-        </foreach>
-    </select>
 
 </mapper>

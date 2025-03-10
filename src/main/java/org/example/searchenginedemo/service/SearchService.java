@@ -6,6 +6,7 @@ import org.example.searchenginedemo.util.PositionParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -34,18 +35,12 @@ public class SearchService {
         bm25Service.getAverageDocumentLength();
     }
 
-    /**
-     * 执行搜索
-     * @param query 查询字符串
-     * @param topK 返回前K个结果
-     * @return 排序后的搜索结果
-     */
     public List<SearchResult> search(String query, int topK) {
         if (query == null || query.trim().isEmpty()) {
             return Collections.emptyList();
         }
 
-        // 对查询进行分词(简单实现为按空格分隔)
+        // 对查询进行分词
         String[] queryTerms = query.toLowerCase().trim().split("\\s+");
         List<String> terms = Arrays.asList(queryTerms);
 
@@ -107,10 +102,6 @@ public class SearchService {
         return results;
     }
 
-    /**
-     * 增加查询词在Redis中的计数
-     * @param terms 查询词列表
-     */
     private void incrementTermCounts(List<String> terms) {
         try {
             for (String term : terms) {
@@ -122,11 +113,6 @@ public class SearchService {
         }
     }
 
-    /**
-     * 获取查询词的搜索次数
-     * @param term 查询词
-     * @return 搜索次数
-     */
     public long getTermSearchCount(String term) {
         try {
             Object count = redisTemplate.opsForHash().get(SEARCH_TERMS_KEY, term);
@@ -137,10 +123,6 @@ public class SearchService {
         }
     }
 
-    /**
-     * 获取所有查询词的搜索次数
-     * @return 查询词及其搜索次数的映射
-     */
     public Map<String, Long> getAllTermSearchCounts() {
         try {
             Map<Object, Object> entries = redisTemplate.opsForHash().entries(SEARCH_TERMS_KEY);
@@ -158,11 +140,6 @@ public class SearchService {
         }
     }
 
-    /**
-     * 获取前N个热门查询词
-     * @param n 数量
-     * @return 热门查询词列表
-     */
     public List<Map.Entry<String, Long>> getTopSearchTerms(int n) {
         Map<String, Long> allCounts = getAllTermSearchCounts();
 
@@ -172,9 +149,6 @@ public class SearchService {
         return sortedEntries.size() <= n ? sortedEntries : sortedEntries.subList(0, n);
     }
 
-    /**
-     * 获取搜索引擎统计信息
-     */
     public Map<String, Object> getSearchStats() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalDocuments", bm25Service.getTotalDocuments());
@@ -184,18 +158,11 @@ public class SearchService {
         return stats;
     }
 
-    /**
-     * 刷新统计信息缓存
-     */
     public void refreshStats() {
         bm25Service.clearCache();
         logger.info("已刷新搜索统计信息缓存");
     }
 
-    /**
-     * 重置某个查询词的计数
-     * @param term 查询词
-     */
     public void resetTermCount(String term) {
         try {
             redisTemplate.opsForHash().delete(SEARCH_TERMS_KEY, term);
@@ -205,9 +172,6 @@ public class SearchService {
         }
     }
 
-    /**
-     * 重置所有查询词计数
-     */
     public void resetAllTermCounts() {
         try {
             redisTemplate.delete(SEARCH_TERMS_KEY);

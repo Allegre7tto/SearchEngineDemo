@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.SearchEngineDemo.mapper.SearchMapper">
+    <!-- 获取文档总数 -->
+    <select id="getTotalPageCount" resultType="int">
+        SELECT COUNT(*) FROM pages
+    </select>
+
+    <!-- 获取所有文档ID -->
+    <select id="getAllPageIds" resultType="int">
+        SELECT id FROM pages
+    </select>
+
+    <!-- 获取文档内容 -->
+    <select id="getPageContent" resultType="string">
+        SELECT content FROM pages WHERE id = #{docId}
+    </select>
+
+    <!-- 获取文档长度 -->
+    <select id="getPageLength" resultType="int">
+        SELECT word_count FROM pages WHERE id = #{docId}
+    </select>
+
+    <!-- 获取平均文档长度 -->
+    <select id="getAveragePageLength" resultType="double">
+        SELECT AVG(word_count) FROM pages
+    </select>
+
+    <update id="batchUpdateDict" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE word_dict
+            SET positions = concat(ifnull(positions, ''), ',', #{item.position})
+            WHERE name = #{item.word}
+        </foreach>
+    </update>
+
+    <!-- 获取包含指定词的文档数量(文档频率) -->
+    <select id="getPageFrequency" resultType="int">
+        SELECT
+            CASE
+                WHEN positions IS NULL THEN 0
+                ELSE (LENGTH(positions) - LENGTH(REPLACE(positions, ',', '')) + 1)
+                END as doc_frequency
+        FROM word_dict
+        WHERE name = #{term}
+    </select>
+
+    <!-- 获取词在各文档中的位置信息 -->
+    <select id="getTermPositions" resultType="map">
+        SELECT name, positions
+        FROM word_dict
+        WHERE name = #{term}
+    </select>
+
+    <!-- 搜索包含指定词的文档及其位置信息 -->
+    <select id="searchTerms" resultType="map">
+        SELECT name, positions
+        FROM word_dict
+        WHERE name IN
+        <foreach item="term" collection="terms" open="(" separator="," close=")">
+            #{term}
+        </foreach>
+    </select>
+
+</mapper>
