@@ -24,9 +24,9 @@ public class IndexService {
     private DictMapper dictMapper;
 
     // 批处理大小
-    private static final int BATCH_SIZE = 500;
+    private static final int BATCH_SIZE = 50;
     // 批处理最大等待时间(毫秒)
-    private static final long BATCH_TIMEOUT_MS = 5000;
+    private static final long BATCH_TIMEOUT_MS = 500;
 
     // 存储接收到的消息的队列
     private final BlockingQueue<Map<String, String>> messageQueue = new LinkedBlockingQueue<>();

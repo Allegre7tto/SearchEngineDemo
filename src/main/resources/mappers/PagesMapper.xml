@@ -2,18 +2,18 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.SearchEngineDemo.mapper.PagesMapper">
+<mapper namespace="org.example.searchenginedemo.mapper.PagesMapper">
 
-    <select id="selectTextFromPages" parameterType="String" resultType="java.util.List">
-        SELECT id,text FROM #{table} LIMIT 16
-        WHERE dic_done = 0
+    <select id="selectTextFromPages" parameterType="String" resultType="org.example.searchenginedemo.entity.Context">
+        SELECT p.id,p.text FROM ${table} p
+        WHERE p.dic_done = 0 AND p.craw_done = 1
+        LIMIT 16
     </select>
 
     <update id="updateDicDone" parameterType="String">
-        UPDATE #{table}
+        UPDATE ${table}
         SET dic_done = 1
-            FROM (SELECT * FROM #{table} LIMIT 16) AS temp
-        WHERE #{table}.id = temp.id
+        WHERE id IN (SELECT id FROM (SELECT id FROM ${table} p WHERE p.dic_done = 0 AND p.craw_done = 1 LIMIT 16) AS temp)
     </update>
 
 </mapper>

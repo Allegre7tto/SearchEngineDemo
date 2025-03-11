@@ -47,7 +47,7 @@ public class BM25Service {
 
     public int getTotalDocuments() {
         if (totalDocuments == null) {
-            totalDocuments = searchMapper.getTotalPageCount();
+            totalDocuments = Integer.valueOf(searchMapper.getTotalPageCount());
         }
         return totalDocuments;
     }

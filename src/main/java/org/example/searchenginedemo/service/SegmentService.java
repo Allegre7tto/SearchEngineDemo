@@ -63,11 +63,11 @@ public class SegmentService {
                     Map<String, List<Integer>> wordPositions = segmentTextWithPositions(text);
 
                     // 将分词结果直接发送到Kafka
-                    sendToKafka(pageId, wordPositions);
+                    threadPool.submit(() -> sendToKafka(pageId, wordPositions));
 
                     // 更新进度
                     int completed = processedCount.incrementAndGet();
-                    if (completed % 100 == 0) {
+                    if (completed % 10 == 0) {
                         System.out.println("已处理: " + completed + "/" + totalTexts + " 文本");
                     }
                 } catch (Exception e) {
@@ -84,7 +84,6 @@ public class SegmentService {
         for (Map.Entry<String, List<Integer>> entry : wordPositions.entrySet()) {
             String word = entry.getKey();
             List<Integer> positions = entry.getValue();
-
             // 为每个词构建消息
             for (Integer position : positions) {
                 String message = word + "|" + pageId + "|" + position;
@@ -117,6 +116,7 @@ public class SegmentService {
 
     private Map<String, List<Integer>> segmentTextWithPositions(String text) {
         if (text == null || text.isEmpty()) {
+            System.out.println("Text is empty");
             return new HashMap<>();
         }
 

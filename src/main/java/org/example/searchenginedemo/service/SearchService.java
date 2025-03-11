@@ -6,8 +6,8 @@ import org.example.searchenginedemo.util.PositionParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -25,14 +25,14 @@ public class SearchService {
     private BM25Service bm25Service;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @PostConstruct
     public void init() {
         logger.info("初始化搜索服务...");
         // 预热缓存
         bm25Service.getTotalDocuments();
-        bm25Service.getAverageDocumentLength();
+//        bm25Service.getAverageDocumentLength();
     }
 
     public List<SearchResult> search(String query, int topK) {
@@ -47,7 +47,7 @@ public class SearchService {
         logger.info("搜索查询: '{}', 分词为: {}", query, terms);
 
         // 增加每个查询词的计数
-        incrementTermCounts(terms);
+//        incrementTermCounts(terms);
 
         // 执行数据库查询，获取包含查询词的文档
         List<Map<String, Object>> searchResults = searchMapper.searchTerms(terms);
