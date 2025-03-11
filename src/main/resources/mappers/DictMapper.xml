@@ -5,7 +5,7 @@
 <mapper namespace="org.example.searchenginedemo.mapper.DictMapper">
 
     <update id="batchUpdateDict" parameterType="list">
-        <foreach collection="string" item="item" separator=";">
+        <foreach collection="collection" item="item" separator=";">
             UPDATE word_dict
             SET positions = concat(ifnull(positions, ''), ',', #{item.position})
             WHERE name = #{item.word}
